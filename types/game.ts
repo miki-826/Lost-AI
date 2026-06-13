@@ -13,10 +13,13 @@ export type Message = {
   content: string;
 };
 
+export type Emotion = "neutral" | "happy" | "sad" | "angry";
+
 export type ChatResponse = {
   reply: string;
   memoryFragments: string[];
   isDirectQuestion: boolean;
+  emotion: Emotion;
 };
 
 export type UnnecessaryQuestion = {

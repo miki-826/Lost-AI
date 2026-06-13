@@ -3,6 +3,7 @@ import { getOpenAI, extractJson } from "@/lib/openai";
 import { buildChatPrompt } from "@/lib/prompts";
 import { fallbackChat } from "@/lib/fallback";
 import { identities } from "@/lib/identities";
+import { detectEmotion } from "@/lib/emotion";
 import type { ChatResponse, Message } from "@/types/game";
 
 export const runtime = "nodejs";
@@ -37,7 +38,12 @@ export async function POST(req: Request) {
         identities.find((i) => i.name === secretIdentity);
       if (!identity) {
         return NextResponse.json(
-          { reply: "……記憶が、見つかりません。", memoryFragments: [], isDirectQuestion: false },
+          {
+            reply: "……記憶が、見つかりません。",
+            memoryFragments: [],
+            isDirectQuestion: false,
+            emotion: "neutral",
+          },
           { status: 200 },
         );
       }
@@ -68,16 +74,24 @@ export async function POST(req: Request) {
         reply: "……うまく、思い出せませんでした。",
         memoryFragments: [],
         isDirectQuestion: false,
+        emotion: "neutral",
       });
     }
 
-    return NextResponse.json(parsed);
+    // モデルが emotion を返さない場合は返答内容から推定する
+    const emotion =
+      parsed.emotion && ["neutral", "happy", "sad", "angry"].includes(parsed.emotion)
+        ? parsed.emotion
+        : detectEmotion(parsed.reply);
+
+    return NextResponse.json({ ...parsed, emotion });
   } catch (err) {
     return NextResponse.json(
       {
         reply: "……通信にノイズが走りました。もう一度試してください。",
         memoryFragments: [],
         isDirectQuestion: false,
+        emotion: "neutral",
       },
       { status: 200 },
     );

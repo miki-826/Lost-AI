@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import NeonButton from "./NeonButton";
 
 export default function TitleScreen({
   onStart,
@@ -11,44 +10,35 @@ export default function TitleScreen({
   onHowTo: () => void;
 }) {
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden">
-      {/* 背景：タイトル素材を薄く敷く */}
-      <Image
-        src="/images/title.png"
-        alt=""
-        fill
-        priority
-        className="object-cover opacity-30"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-bg/60 via-bg/40 to-bg/90" />
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-bg">
+      {/* タイトル素材をそのまま表示（アスペクト比を保持して全体を見せる） */}
+      <div
+        className="relative aspect-[1672/941] max-w-full"
+        style={{ width: "min(100vw, calc(100vh * 1672 / 941))" }}
+      >
+        <Image
+          src="/images/title.png"
+          alt="LostAI"
+          fill
+          priority
+          className="object-contain select-none"
+        />
 
-      <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center fade-in">
-        <div className="flex flex-col items-center gap-2">
-          <h1
-            className="glitch font-title text-7xl font-black tracking-widest text-ink glow-text sm:text-8xl"
-            data-text="LostAI"
-          >
-            Lost<span className="text-accent">AI</span>
-          </h1>
-          <p className="font-term text-sm tracking-wide text-subink sm:text-base">
-            失われた記憶は、あと
-            <span className="text-warn glow-text">5回</span>
-            でしか呼び出せない。
-          </p>
-        </div>
+        {/* 背景画像内の「記憶を復元する」ボタン位置の透明ホットスポット */}
+        <button
+          onClick={onStart}
+          aria-label="記憶を復元する"
+          className="group absolute rounded-[10px] transition-all duration-200 hover:bg-[rgba(91,231,255,0.12)] hover:shadow-[0_0_22px_rgba(91,231,255,0.55)] focus:outline-none focus-visible:bg-[rgba(91,231,255,0.12)]"
+          style={{ left: "31%", top: "49.5%", width: "40%", height: "12.5%" }}
+        />
 
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <NeonButton onClick={onStart} className="text-base">
-            ▸ 記憶を復元する
-          </NeonButton>
-          <NeonButton onClick={onHowTo} className="text-base">
-            ▹ 遊び方を見る
-          </NeonButton>
-        </div>
-
-        <div className="mt-6 font-term text-[10px] tracking-[0.3em] text-warn/60 fail-flicker">
-          SYSTEM WARNING — MEMORY LOST
-        </div>
+        {/* 背景画像内の「遊び方を見る」ボタン位置の透明ホットスポット */}
+        <button
+          onClick={onHowTo}
+          aria-label="遊び方を見る"
+          className="group absolute rounded-[10px] transition-all duration-200 hover:bg-[rgba(91,231,255,0.12)] hover:shadow-[0_0_22px_rgba(91,231,255,0.55)] focus:outline-none focus-visible:bg-[rgba(91,231,255,0.12)]"
+          style={{ left: "31%", top: "67%", width: "40%", height: "13%" }}
+        />
       </div>
     </div>
   );

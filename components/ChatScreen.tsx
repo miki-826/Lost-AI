@@ -5,7 +5,21 @@ import Image from "next/image";
 import StatusBar from "./StatusBar";
 import MemoryFragmentCard from "./MemoryFragmentCard";
 import NeonButton from "./NeonButton";
-import type { Message } from "@/types/game";
+import type { Emotion, Message } from "@/types/game";
+
+const EMOTION_IMAGE: Record<Emotion, string> = {
+  neutral: "/images/characters/neutral.png",
+  happy: "/images/characters/happy.png",
+  sad: "/images/characters/sad.png",
+  angry: "/images/characters/angry.png",
+};
+
+const EMOTION_LABEL: Record<Emotion, string> = {
+  neutral: "MEMORY FRAGMENT",
+  happy: "EMOTION: JOY",
+  sad: "EMOTION: SORROW",
+  angry: "EMOTION: ALERT",
+};
 
 export default function ChatScreen({
   messages,
@@ -14,6 +28,7 @@ export default function ChatScreen({
   stability,
   fragments,
   isLoading,
+  emotion,
   onSend,
   onGuess,
 }: {
@@ -23,6 +38,7 @@ export default function ChatScreen({
   stability: number;
   fragments: string[];
   isLoading: boolean;
+  emotion: Emotion;
   onSend: (q: string) => void;
   onGuess: () => void;
 }) {
@@ -45,20 +61,21 @@ export default function ChatScreen({
     <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-3 px-3 py-4 sm:px-4">
       <StatusBar remaining={remaining} noise={noise} stability={stability} />
 
-      <div className="grid flex-1 grid-cols-1 gap-3 lg:grid-cols-[200px_1fr_180px]">
+      <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-[160px_1fr] lg:grid-cols-[200px_1fr_180px]">
         {/* 左：AIステータス */}
-        <div className="panel hidden flex-col items-center gap-3 rounded-md p-4 lg:flex">
-          <div className="relative h-32 w-32">
+        <div className="panel hidden flex-col items-center gap-3 rounded-md p-4 sm:flex">
+          <div className="relative h-36 w-32">
             <Image
-              src="/images/character.png"
-              alt="LostAI"
+              key={emotion}
+              src={EMOTION_IMAGE[emotion]}
+              alt={`LostAI (${emotion})`}
               fill
-              className="object-contain pulse-glow"
+              className="object-contain pulse-glow fade-in"
             />
           </div>
           <div className="text-center font-term text-[10px] leading-relaxed text-accent">
             <div className="glow-text">AI STATUS</div>
-            <div className="mt-1 text-subink">MEMORY FRAGMENT</div>
+            <div className="mt-1 text-subink">{EMOTION_LABEL[emotion]}</div>
             <div className="text-subink">LOADING...</div>
           </div>
           <div className="mt-2 w-full space-y-1 font-term text-[9px] text-subink/70">
@@ -71,6 +88,15 @@ export default function ChatScreen({
         {/* 中央：チャットログ */}
         <div className="panel flex flex-col rounded-md">
           <div className="flex items-center gap-2 border-b border-accent/20 px-4 py-2 font-term text-[10px] tracking-widest text-subink">
+            <span className="relative h-7 w-6 shrink-0 sm:hidden">
+              <Image
+                key={emotion}
+                src={EMOTION_IMAGE[emotion]}
+                alt={`LostAI (${emotion})`}
+                fill
+                className="object-contain pulse-glow fade-in"
+              />
+            </span>
             <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
             CHAT LOG / 深層記憶領域
           </div>

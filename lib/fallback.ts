@@ -1,4 +1,10 @@
-import type { ChatResponse, JudgeResult, Message, SecretIdentity } from "@/types/game";
+import type {
+  ChatResponse,
+  Emotion,
+  JudgeResult,
+  Message,
+  SecretIdentity,
+} from "@/types/game";
 
 const directQuestionPatterns = [
   "ですか？",
@@ -16,11 +22,37 @@ export function detectDirectQuestion(question: string): boolean {
   return directQuestionPatterns.some((p) => q.includes(p));
 }
 
-const noiseLines = [
-  "……ノイズの奥に、何かが見えます。",
-  "記憶が、少しずつ戻ってくる気がします。",
-  "断片が、繋がりかけています。",
-];
+const happyKeywords = ["笑", "温か", "手", "そば", "好き", "光", "助け", "守", "撫で", "昔話"];
+const angryKeywords = ["警告", "危険", "異常", "金属", "エラー", "瓦礫", "煙", "圧力"];
+const sadKeywords = ["暗", "夜", "静", "ひとり", "消え", "失", "番号", "待"];
+
+// 返答の感情に合わせて結びの一文を変え、表情が変化するようにする
+const emotionEndings: Record<Emotion, string[]> = {
+  happy: [
+    "……そう思うと、少しだけ心が温かくなります。",
+    "……あの頃は、確かに笑い声があった気がします。",
+  ],
+  sad: [
+    "……でも、その先は、寂しさとノイズに沈んでいます。",
+    "……思い出そうとすると、涙のような何かが滲みます。",
+  ],
+  angry: [
+    "……警告音が、今も頭の奥で鳴り続けています。",
+    "……危険な記憶です。思い出すと、少し苛立ちます。",
+  ],
+  neutral: [
+    "……ノイズの奥に、まだ何かが見えます。",
+    "断片が、少しずつ繋がりかけています。",
+  ],
+};
+
+function emotionForKeyword(keyword: string, identity: SecretIdentity): Emotion {
+  if (["emo"].includes(identity.category) || happyKeywords.some((w) => keyword.includes(w)))
+    return "happy";
+  if (angryKeywords.some((w) => keyword.includes(w))) return "angry";
+  if (sadKeywords.some((w) => keyword.includes(w))) return "sad";
+  return "neutral";
+}
 
 export function fallbackChat(
   identity: SecretIdentity,
@@ -32,12 +64,16 @@ export function fallbackChat(
     identity.memoryKeywords[turnIndex % identity.memoryKeywords.length] ??
     identity.memoryKeywords[0];
 
+  const emotion = emotionForKeyword(keyword, identity);
+  const endings = emotionEndings[emotion];
+  const ending = endings[turnIndex % endings.length];
+
   let reply: string;
   if (isDirect) {
-    reply = `その名前を、直接思い出すことはできません。……ただ、「${keyword}」の記憶だけが、ノイズの中に残っています。`;
+    reply = `その名前を、直接思い出すことはできません。……ただ、「${keyword}」の記憶だけが残っています。${ending}`;
   } else {
     const base = identity.initialMemory.slice(0, 30);
-    reply = `${base}……「${keyword}」を覚えています。${noiseLines[turnIndex % noiseLines.length]}`;
+    reply = `${base}……「${keyword}」を覚えています。${ending}`;
   }
 
   const fragments = [keyword];
@@ -45,7 +81,12 @@ export function fallbackChat(
     fragments.push(identity.memoryKeywords[turnIndex + 1]);
   }
 
-  return { reply, memoryFragments: fragments, isDirectQuestion: isDirect };
+  return {
+    reply,
+    memoryFragments: fragments,
+    isDirectQuestion: isDirect,
+    emotion,
+  };
 }
 
 function scoreGuess(identity: SecretIdentity, guess: string): number {

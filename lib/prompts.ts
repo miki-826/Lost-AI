@@ -51,11 +51,19 @@ ${params.remainingQuestions}
 プレイヤーの質問:
 ${params.userQuestion}
 
+emotion について:
+- 返答の感情に合わせて "neutral" / "happy" / "sad" / "angry" のいずれかを選んでください。
+- 嬉しい・温かい・誰かを助けた記憶 → "happy"
+- 悲しい・寂しい・失われていく記憶 → "sad"
+- 強く拒む・警告・苛立ち → "angry"
+- どれにも当てはまらない → "neutral"
+
 出力形式は必ずJSON:
 {
   "reply": "AIの返答",
   "memoryFragments": ["新しく判明した断片1", "断片2"],
-  "isDirectQuestion": true または false
+  "isDirectQuestion": true または false,
+  "emotion": "neutral または happy または sad または angry"
 }`;
 }
 

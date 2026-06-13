@@ -12,6 +12,7 @@ import AnalysisScreen from "@/components/AnalysisScreen";
 import { getRandomIdentity } from "@/lib/identities";
 import type {
   ChatResponse,
+  Emotion,
   GamePhase,
   JudgeResult,
   Message,
@@ -36,6 +37,7 @@ export default function Page() {
   const [playerGuess, setPlayerGuess] = useState("");
   const [result, setResult] = useState<JudgeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [emotion, setEmotion] = useState<Emotion>("neutral");
 
   const noise = NOISE_BY_REMAINING[remaining] ?? 50;
   const stability = 100 - noise;
@@ -48,6 +50,7 @@ export default function Page() {
     setFragments([]);
     setPlayerGuess("");
     setResult(null);
+    setEmotion("neutral");
     setPhase("playing");
   };
 
@@ -58,6 +61,7 @@ export default function Page() {
     setRemaining(5);
     setFragments([]);
     setResult(null);
+    setEmotion("neutral");
   };
 
   const handleSend = async (question: string) => {
@@ -87,6 +91,7 @@ export default function Page() {
       if (data.memoryFragments?.length) {
         setFragments((prev) => Array.from(new Set([...prev, ...data.memoryFragments])));
       }
+      if (data.emotion) setEmotion(data.emotion);
       setRemaining((r) => Math.max(0, r - 1));
     } catch {
       setMessages((prev) => [
@@ -163,6 +168,7 @@ export default function Page() {
           stability={stability}
           fragments={fragments}
           isLoading={isLoading}
+          emotion={emotion}
           onSend={handleSend}
           onGuess={() => setPhase("guess")}
         />
