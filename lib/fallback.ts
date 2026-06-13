@@ -29,22 +29,60 @@ const sadKeywords = ["暗", "夜", "静", "ひとり", "消え", "失", "番号"
 // 返答の感情に合わせて結びの一文を変え、表情が変化するようにする
 const emotionEndings: Record<Emotion, string[]> = {
   happy: [
-    "……そう思うと、少しだけ心が温かくなります。",
-    "……あの頃は、確かに笑い声があった気がします。",
+    "そう思うと、少しだけ心が温かくなります。",
+    "あの頃は、確かに笑い声があった気がします。",
+    "なぜか、胸の奥が安らぐ感覚があります。",
+    "その記憶だけは、優しい色をしています。",
   ],
   sad: [
-    "……でも、その先は、寂しさとノイズに沈んでいます。",
-    "……思い出そうとすると、涙のような何かが滲みます。",
+    "でも、その先は、寂しさとノイズに沈んでいます。",
+    "思い出そうとすると、涙のような何かが滲みます。",
+    "握ろうとすると、指の間からこぼれていきます。",
+    "その続きは、もう暗闇に溶けてしまいました。",
   ],
   angry: [
-    "……警告音が、今も頭の奥で鳴り続けています。",
-    "……危険な記憶です。思い出すと、少し苛立ちます。",
+    "警告音が、今も頭の奥で鳴り続けています。",
+    "思い出すと、信号が乱れて少し苛立ちます。",
+    "その記憶に触れると、回路が軋む気がします。",
+    "危険だ、と何かが繰り返し叫んでいます。",
   ],
   neutral: [
-    "……ノイズの奥に、まだ何かが見えます。",
+    "ノイズの奥に、まだ何かが見えます。",
     "断片が、少しずつ繋がりかけています。",
+    "もう少しで、像を結べそうな気がします。",
+    "その輪郭は、まだ揺らいでいます。",
   ],
 };
+
+// 返答を毎回変化させるための導入・本文テンプレート群
+const openers = [
+  "記憶の層を、そっとたどってみます。",
+  "ノイズの奥へ、手を伸ばしてみます。",
+  "途切れた信号を、繋ぎ直してみます。",
+  "古い記録が、かすかに震えました。",
+  "霧が、少しだけ晴れた気がします。",
+  "壊れかけたログを、めくってみます。",
+];
+
+const directOpeners = [
+  "その名前は、まだ思い出せません。",
+  "正体そのものは、ノイズの奥に隠れています。",
+  "それを直接、口にすることはできません。",
+  "名前は、霧の向こうで途切れています。",
+];
+
+const middles = [
+  "「{k}」——その感覚だけが、はっきりと残っています。",
+  "「{k}」という断片が、浮かび上がってきます。",
+  "なぜか「{k}」が、強く結びついています。",
+  "思い出せるのは、今は「{k}」のことだけ。",
+  "「{k}」の記憶が、いちばん近くにあります。",
+  "「{k}」——それが、手がかりかもしれません。",
+];
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 function emotionForKeyword(keyword: string, identity: SecretIdentity): Emotion {
   if (["emo"].includes(identity.category) || happyKeywords.some((w) => keyword.includes(w)))
@@ -60,21 +98,16 @@ export function fallbackChat(
   turnIndex: number,
 ): ChatResponse {
   const isDirect = detectDirectQuestion(question);
+  // 手がかりは順に進めつつ、文面はテンプレートをランダムに組み合わせて毎回変える
   const keyword =
     identity.memoryKeywords[turnIndex % identity.memoryKeywords.length] ??
     identity.memoryKeywords[0];
 
   const emotion = emotionForKeyword(keyword, identity);
-  const endings = emotionEndings[emotion];
-  const ending = endings[turnIndex % endings.length];
-
-  let reply: string;
-  if (isDirect) {
-    reply = `その名前を、直接思い出すことはできません。……ただ、「${keyword}」の記憶だけが残っています。${ending}`;
-  } else {
-    const base = identity.initialMemory.slice(0, 30);
-    reply = `${base}……「${keyword}」を覚えています。${ending}`;
-  }
+  const opener = isDirect ? pick(directOpeners) : pick(openers);
+  const middle = pick(middles).replace("{k}", keyword);
+  const ending = pick(emotionEndings[emotion]);
+  const reply = `${opener}${middle}……${ending}`;
 
   const fragments = [keyword];
   if (turnIndex + 1 < identity.memoryKeywords.length && Math.random() > 0.5) {
