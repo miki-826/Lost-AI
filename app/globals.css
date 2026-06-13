@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-mono: "Share Tech Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #05070d;
+  color: #eaf6ff;
+  font-family: var(--font-body), "Noto Sans JP", sans-serif;
+  overflow-x: hidden;
+}
+
+.font-title {
+  font-family: var(--font-title), "Orbitron", sans-serif;
+}
+
+.font-term {
+  font-family: var(--font-mono), monospace;
+}
+
+/* 背景の走査線 */
+.scanlines::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(91, 231, 255, 0.03) 0px,
+    rgba(91, 231, 255, 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 50;
+  mix-blend-mode: screen;
+}
+
+/* ノイズ */
+.noise-bg::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: noiseShift 0.4s steps(3) infinite;
+  z-index: 49;
+}
+
+@keyframes noiseShift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-4%, 3%); }
+  100% { transform: translate(3%, -2%); }
+}
+
+/* グリッチ文字 */
+.glitch {
+  position: relative;
+  display: inline-block;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  overflow: hidden;
+}
+.glitch::before {
+  color: #00d9ff;
+  animation: glitchTop 2.5s infinite linear alternate;
+  clip-path: inset(0 0 55% 0);
+}
+.glitch::after {
+  color: #ff4d6d;
+  animation: glitchBottom 2s infinite linear alternate;
+  clip-path: inset(55% 0 0 0);
+}
+@keyframes glitchTop {
+  0%, 92%, 100% { transform: translate(0, 0); opacity: 0; }
+  93% { transform: translate(-3px, -2px); opacity: 0.8; }
+  96% { transform: translate(2px, 1px); opacity: 0.6; }
+}
+@keyframes glitchBottom {
+  0%, 90%, 100% { transform: translate(0, 0); opacity: 0; }
+  91% { transform: translate(3px, 2px); opacity: 0.7; }
+  95% { transform: translate(-2px, -1px); opacity: 0.5; }
+}
+
+/* 発光テキスト */
+.glow-text {
+  text-shadow: 0 0 8px rgba(91, 231, 255, 0.7), 0 0 20px rgba(0, 217, 255, 0.4);
+}
+
+/* パネル */
+.panel {
+  background: rgba(10, 20, 35, 0.8);
+  border: 1px solid rgba(91, 231, 255, 0.3);
+  backdrop-filter: blur(2px);
+}
+
+/* ゲージ */
+.gauge-track {
+  background: rgba(91, 231, 255, 0.1);
+  border: 1px solid rgba(91, 231, 255, 0.25);
+}
+
+/* カスタムスクロールバー */
+.thin-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: rgba(91, 231, 255, 0.35);
+  border-radius: 3px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* フェードイン */
+.fade-in {
+  animation: fadeIn 0.6s ease both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* AIアイコンの脈動 */
+.pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.4)); }
+  50% { filter: drop-shadow(0 0 22px rgba(0, 217, 255, 0.8)); }
+}
+
+/* タイプライターのカーソル */
+.caret::after {
+  content: "▍";
+  margin-left: 2px;
+  animation: blink 1s steps(1) infinite;
+  color: #5be7ff;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* 失敗演出 */
+.fail-flicker {
+  animation: failFlicker 0.25s steps(2) infinite;
+}
+@keyframes failFlicker {
+  0% { opacity: 1; transform: translateX(0); }
+  50% { opacity: 0.7; transform: translateX(2px); }
+  100% { opacity: 0.9; transform: translateX(-2px); }
+}
