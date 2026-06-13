@@ -1,46 +1,83 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import NeonButton from "./NeonButton";
 
-const rules = [
-  { icon: "❓", text: "AIに質問できるのは5回まで" },
-  { icon: "🚫", text: "AIは正体を直接答えられません" },
-  { icon: "🧩", text: "AIは聞かれたことにだけ断片的に答えます" },
-  { icon: "🔍", text: "最後に「何のAIだったか」を推理します" },
-  { icon: "⚡", text: "正解なら記憶復元、不正解なら記憶崩壊" },
-];
+const slides = ["/images/howto/slide1.png", "/images/howto/slide2.png"];
 
-export default function HowToPlayScreen({ onStart }: { onStart: () => void }) {
+export default function HowToPlayScreen({
+  onStart,
+  onBack,
+}: {
+  onStart: () => void;
+  onBack: () => void;
+}) {
+  const [idx, setIdx] = useState(0);
+  const isLast = idx === slides.length - 1;
+
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-6 py-12">
-      <div className="w-full max-w-2xl fade-in">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-title text-2xl tracking-widest text-glow glow-text">
-            HOW TO PLAY
-          </h2>
-          <div className="panel rounded px-3 py-1 font-term text-xs text-warn">
-            残り <span className="text-lg glow-text">5</span> 回
-          </div>
-        </div>
+    <div className="flex min-h-screen w-full flex-col items-center justify-center gap-4 px-4 py-8">
+      <div className="flex w-full max-w-5xl items-center justify-between">
+        <h2 className="font-title text-xl tracking-widest text-glow glow-text sm:text-2xl">
+          HOW TO PLAY
+        </h2>
+        <span className="font-term text-xs text-subink">
+          {idx + 1} / {slides.length}
+        </span>
+      </div>
 
-        <div className="space-y-3">
-          {rules.map((r, i) => (
-            <div
+      {/* スライド本体（アスペクト比を保持して全体表示） */}
+      <div className="relative aspect-[1672/941] w-full max-w-5xl overflow-hidden rounded-md border border-accent/30 shadow-glow">
+        <Image
+          key={idx}
+          src={slides[idx]}
+          alt={`遊び方 スライド${idx + 1}`}
+          fill
+          priority
+          className="object-contain fade-in"
+        />
+      </div>
+
+      {/* ページ送り */}
+      <div className="flex items-center gap-4">
+        <NeonButton
+          onClick={() => setIdx((i) => Math.max(0, i - 1))}
+          disabled={idx === 0}
+          className="px-4 py-2 text-sm"
+        >
+          ◂ 前へ
+        </NeonButton>
+
+        <div className="flex items-center gap-2">
+          {slides.map((_, i) => (
+            <button
               key={i}
-              className="panel flex items-center gap-4 rounded-md px-4 py-3 transition-all hover:border-glow/60 hover:shadow-glow"
-            >
-              <span className="font-term text-accent text-lg">0{i + 1}</span>
-              <span className="text-xl">{r.icon}</span>
-              <span className="text-sm text-ink sm:text-base">{r.text}</span>
-            </div>
+              onClick={() => setIdx(i)}
+              aria-label={`スライド${i + 1}へ`}
+              className={`h-2.5 w-2.5 rounded-full transition-all ${
+                i === idx ? "bg-accent shadow-glow" : "bg-accent/25 hover:bg-accent/50"
+              }`}
+            />
           ))}
         </div>
 
-        <div className="mt-8 flex justify-center">
-          <NeonButton onClick={onStart} className="text-base">
-            ▸ ゲーム開始
-          </NeonButton>
-        </div>
+        <NeonButton
+          onClick={() => setIdx((i) => Math.min(slides.length - 1, i + 1))}
+          disabled={isLast}
+          className="px-4 py-2 text-sm"
+        >
+          次へ ▸
+        </NeonButton>
+      </div>
+
+      <div className="mt-2 flex gap-3">
+        <NeonButton onClick={onBack} className="text-sm">
+          ◂ タイトルへ
+        </NeonButton>
+        <NeonButton onClick={onStart} variant="success" className="text-sm">
+          ▸ ゲーム開始
+        </NeonButton>
       </div>
     </div>
   );

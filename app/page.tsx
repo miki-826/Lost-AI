@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import BgmPlayer from "@/components/BgmPlayer";
+import StatusBadge from "@/components/StatusBadge";
 import TitleScreen from "@/components/TitleScreen";
 import StoryScreen from "@/components/StoryScreen";
 import HowToPlayScreen from "@/components/HowToPlayScreen";
@@ -41,6 +42,10 @@ export default function Page() {
 
   const noise = NOISE_BY_REMAINING[remaining] ?? 50;
   const stability = 100 - noise;
+
+  // 推理後（動画・総合評価）はBGMを切り替える
+  const bgmSrc =
+    phase === "video" || phase === "analysis" ? "/music/result.mp3" : "/music/bgm.mp3";
 
   const startGame = () => {
     const id = getRandomIdentity();
@@ -153,13 +158,16 @@ export default function Page() {
 
   return (
     <main className="scanlines noise-bg relative min-h-screen w-full">
-      <BgmPlayer />
+      <BgmPlayer src={bgmSrc} />
+      <StatusBadge />
 
       {phase === "title" && (
         <TitleScreen onStart={() => setPhase("story")} onHowTo={() => setPhase("howto")} />
       )}
-      {phase === "story" && <StoryScreen onNext={() => setPhase("howto")} />}
-      {phase === "howto" && <HowToPlayScreen onStart={startGame} />}
+      {phase === "story" && <StoryScreen onNext={startGame} />}
+      {phase === "howto" && (
+        <HowToPlayScreen onStart={startGame} onBack={() => setPhase("title")} />
+      )}
       {phase === "playing" && (
         <ChatScreen
           messages={messages}

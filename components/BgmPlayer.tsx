@@ -2,20 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function BgmPlayer() {
+export default function BgmPlayer({ src }: { src: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [volume, setVolume] = useState(0.5);
   const [muted, setMuted] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [needsGesture, setNeedsGesture] = useState(false);
 
+  // 初回マウントでオーディオを生成し、最初から再生を試みる
   useEffect(() => {
-    const audio = new Audio("/music/bgm.mp3");
+    const audio = new Audio(src);
     audio.loop = true;
     audio.volume = volume;
     audioRef.current = audio;
 
-    // 最初から再生を試みる
     const tryPlay = () => {
       audio
         .play()
@@ -24,7 +24,6 @@ export default function BgmPlayer() {
           setNeedsGesture(false);
         })
         .catch(() => {
-          // ブラウザの自動再生制限。最初の操作で再生する
           setNeedsGesture(true);
         });
     };
@@ -52,6 +51,19 @@ export default function BgmPlayer() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // src が変わったら曲を切り替える（音量・ミュートは維持）
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.src.endsWith(src)) return;
+    audio.src = src;
+    audio.load();
+    audio
+      .play()
+      .then(() => setPlaying(true))
+      .catch(() => {});
+  }, [src]);
 
   useEffect(() => {
     if (audioRef.current) {
